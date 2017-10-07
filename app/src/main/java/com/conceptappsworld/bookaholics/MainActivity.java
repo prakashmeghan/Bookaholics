@@ -1,6 +1,8 @@
 package com.conceptappsworld.bookaholics;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import com.conceptappsworld.bookaholics.adapter.BookAdapter;
 import com.conceptappsworld.bookaholics.loader.BookLoader;
 import com.conceptappsworld.bookaholics.model.Book;
+import com.conceptappsworld.bookaholics.util.CommonUtil;
 import com.conceptappsworld.bookaholics.util.ConnectionDetector;
 import com.conceptappsworld.bookaholics.util.ConstantUtil;
 
@@ -31,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private Button btSearch;
     private ListView lvBook;
     private View loadingIndicator;
-    private TextView tvEmpty;
+    private TextView tvEmpty, tvSearchResult;
 
     private BookAdapter bookAdapter;
     private ConnectionDetector connectionDetector;
@@ -97,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         btSearch = (Button) findViewById(R.id.bt_search);
         lvBook = (ListView) findViewById(R.id.list);
         tvEmpty = (TextView) findViewById(R.id.empty_view);
+        tvSearchResult = (TextView) findViewById(R.id.tv_search_result);
         loadingIndicator = (View) findViewById(R.id.loading_indicator);
     }
 
@@ -104,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<List<Book>> onCreateLoader(int id, Bundle args) {
         String finalUrl = ConstantUtil.BOOK_URL +
                 ConstantUtil.QUERYSTR_PARAM1 +
-                etSearch.getText().toString() +
+                CommonUtil.replace(etSearch.getText().toString())    +
                 ConstantUtil.QUERYSTR_PARAM2 +
                 DEFAUL_MAX_RESULT;
         return new BookLoader(MainActivity.this, finalUrl);
@@ -115,7 +119,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.i(LOG_TAG, "onLoadFinished");
 
         loadingIndicator.setVisibility(View.GONE);
-        tvEmpty.setText(R.string.no_books);
+        lvBook.setVisibility(View.VISIBLE);
+        tvEmpty.setText(getResources().getString(R.string.no_books));
         // Clear the adapter of previous earthquake data
         bookAdapter.clear();
 
@@ -134,37 +139,49 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+        Book book = bookAdapter.getItem(i);
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(book.getInfoLink()));
+        startActivity(browserIntent);
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.bt_search:
-
-                InputMethodManager inputManager = (InputMethodManager)
-                        getSystemService(Context.INPUT_METHOD_SERVICE);
-
-                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-                        InputMethodManager.HIDE_NOT_ALWAYS);
-
-                /*bookAdapter.clear();
-                bookAdapter.notifyDataSetChanged();*/
-
-                loadingIndicator.setVisibility(View.VISIBLE);
-
-                if (!connectionDetector.isConnectingToInternet()) {
-                    //No Internet
-                    loadingIndicator.setVisibility(View.GONE);
-                    tvEmpty.setText(getResources().getString(R.string.no_internet));
-                    return;
+                tvEmpty.setText("");
+                lvBook.setVisibility(View.INVISIBLE);
+                if(etSearch.getText().toString().isEmpty()){
+                    tvSearchResult.setText(getResources().getString(R.string.empty_validation));
                 } else {
-                    initLoader();
+                    hideKeyboard();
+                    tvSearchResult.setText(getResources().getString(R.string.search_result) +
+                            ": " +
+                            etSearch.getText().toString());
+
+                    loadingIndicator.setVisibility(View.VISIBLE);
+
+                    if (!connectionDetector.isConnectingToInternet()) {
+                        //No Internet
+                        loadingIndicator.setVisibility(View.GONE);
+                        tvEmpty.setText(getResources().getString(R.string.no_internet));
+                        return;
+                    } else {
+                        initLoader();
+                    }
                 }
+
                 break;
             default:
 
                 break;
         }
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputManager = (InputMethodManager)
+                getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
     }
 }
