@@ -2,16 +2,13 @@ package com.conceptappsworld.bookaholics.model;
 
 import java.util.ArrayList;
 
-/**
- * Created by Sprim on 06-10-2017.
- */
-
 public class Book {
 
     private String title;
     private String description;
     private String publisher;
     private String infoLink;
+    private ArrayList<String> authors;
 
     public Book(String _title, String _descripton, String _publisher, String _infoLink){
         title = _title;
@@ -52,4 +49,11 @@ public class Book {
         this.infoLink = infoLink;
     }
 
+    public ArrayList<String> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(ArrayList<String> authors) {
+        this.authors = authors;
+    }
 }

@@ -66,7 +66,7 @@ public class CommonUtil {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Problem retrieving the earthquake JSON results.", e);
+            Log.e(LOG_TAG, "Problem retrieving the book JSON results.", e);
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -118,7 +118,7 @@ public class CommonUtil {
             return null;
         }
 
-        // Create an empty ArrayList that we can start adding earthquakes to
+        // Create an empty ArrayList that we can start adding books to
         List<Book> books = new ArrayList<Book>();
 
         // Try to parse the JSON response string. If there's a problem with the way the JSON
@@ -143,19 +143,46 @@ public class CommonUtil {
                 // for that book.
                 JSONObject properties = currentBook.getJSONObject(ConstantUtil.NODE_VOLUMEINFO);
 
+                String title = "";
                 // Extract the value for the key called "title"
-                String title = properties.getString(ConstantUtil.NODE_TITLE);
+                if (properties.has(ConstantUtil.NODE_TITLE)) {
+                    title = properties.getString(ConstantUtil.NODE_TITLE);
+                }
 
+                String publisher = "";
                 // Extract the value for the key called "publisher"
-                String publisher = properties.getString(ConstantUtil.NODE_PUBLISHER);
+                if (properties.has(ConstantUtil.NODE_PUBLISHER)) {
+                    publisher = properties.getString(ConstantUtil.NODE_PUBLISHER);
+                }
 
+                String description = "";
                 // Extract the value for the key called "description"
-                String description = properties.getString(ConstantUtil.NODE_DESCRIPTION);
+                if (properties.has(ConstantUtil.NODE_DESCRIPTION)) {
+                    description = properties.getString(ConstantUtil.NODE_DESCRIPTION);
+                }
 
+                String infoLink = "";
                 // Extract the value for the key called "infoLink"
-                String infoLink = properties.getString(ConstantUtil.NODE_INFOLINK);
+                if (properties.has(ConstantUtil.NODE_INFOLINK)) {
+                    infoLink = properties.getString(ConstantUtil.NODE_INFOLINK);
+                }
+
+                JSONArray arrAuthors;
+                ArrayList<String> alAuthors = new ArrayList<String>();
+                if (properties.has(ConstantUtil.NODE_AUTHORS)) {
+                    arrAuthors = properties.getJSONArray(ConstantUtil.NODE_AUTHORS);
+                    if(arrAuthors != null && arrAuthors.length() > 0){
+                        for(int j=0; j < arrAuthors.length(); j++){
+                            alAuthors.add(arrAuthors.getString(j));
+                        }
+                    }
+                }
 
                 Book book = new Book(title, description, publisher, infoLink);
+
+                if(alAuthors.size() > 0){
+                    book.setAuthors(alAuthors);
+                }
 
                 books.add(book);
             }
@@ -164,7 +191,7 @@ public class CommonUtil {
             // If an error is thrown when executing any of the above statements in the "try" block,
             // catch the exception here, so the app doesn't crash. Print a log message
             // with the message from the exception.
-            Log.e("QueryUtils", "Problem parsing the earthquake JSON results", e);
+            Log.e("QueryUtils", "Problem parsing the book JSON results", e);
         }
 
         // Return the list of books

@@ -1,9 +1,5 @@
 package com.conceptappsworld.bookaholics.util;
 
-/**
- * Created by Sprim on 06-10-2017.
- */
-
 public class ConstantUtil {
     public static final String API_KEY = "AIzaSyCXiryeSAGc8KRK62WwHpMImKe4RGGxKL0";
     public static final String BOOK_URL = "https://www.googleapis.com/books/v1/volumes";
